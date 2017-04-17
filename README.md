@@ -1,4 +1,4 @@
-# QingStor SDK for Java
+# QingStor SDK for SDK
 
 The official QingStor SDK for the C/C++ programming language.
 
