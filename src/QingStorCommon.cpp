@@ -102,8 +102,8 @@ Signature(HeaderContent *h, const char *path_with_query,
 		sstr<<"POST\n\n"<<"application/json"<<"\n"<<timebuf<<"\n"<<path_with_query;
 	}
 
-	sha256hmac(sstr.str().c_str(), tmpbuf, cred->secret.c_str());
-	std::string signature = Base64Encode(tmpbuf, 32);		// SHA256_DIGEST_LENGHT is 32
+	QingStor::Internal::sha256hmac(sstr.str().c_str(), tmpbuf, cred->secret.c_str());
+	std::string signature = QingStor::Internal::Base64Encode(tmpbuf, 32);		// SHA256_DIGEST_LENGHT is 32
 
 	sstr.str("");
 	sstr.clear();

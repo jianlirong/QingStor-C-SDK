@@ -23,19 +23,16 @@
 #ifndef _LIB_ENCODE_FUNCTIONS_
 #define _LIB_ENCODE_FUNCTIONS_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stddef.h>
 #include <stdbool.h>
+
+namespace QingStor {
+namespace Internal {
 
 char *Base64Encode(const char* buffer, size_t length);
 
 bool sha256hmac(const char *str, char out[65], const char *secret);
 
-#ifdef __cplusplus
 }
-#endif
-
+}
 #endif  /* _LIB_ENCODE_FUNCTIONS_ */

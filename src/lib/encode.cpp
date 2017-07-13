@@ -39,6 +39,9 @@
 
 #include <curl/curl.h>
 
+namespace QingStor {
+namespace Internal {
+
 /* Encodes a binary safe base 64 string */
 char *
 Base64Encode(const char *buffer, size_t length)
@@ -82,4 +85,7 @@ sha256hmac(const char *str, char out[33], const char *secret)
     out[32] = '\0';
 
     return true;
+}
+
+}
 }
