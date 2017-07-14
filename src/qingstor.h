@@ -95,11 +95,12 @@ const char * qingstorGetLastError();
 /**
  * qingstorInitContext - Initialize the QingStor Context.
  *
+ * @param location				The access location for accessing QingStor.
  * @param access_key_id			The access key id for accessing QingStor.
  * @param secret_access_key		The secret access key for accessing QingStor.
  * @return 						Returns a handle to the QingStor Context, or NULL on error.
  */
-qingstorContext qingstorInitContext(const char *access_key_id, const char *secret_access_key);
+qingstorContext qingstorInitContext(const char *location, const char *access_key_id, const char *secret_access_key);
 
 /**
  * qingstorInitContextFromFile - Initialize the QingStor Context through a configuration file.

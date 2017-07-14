@@ -42,9 +42,9 @@ ObjectContentComp(const void *a_, const void *b_)
 	return strcmp(a->key.c_str(), b->key.c_str());
 }
 
-Context::Context(std::string access_key_id, std::string secret_access_key)
+Context::Context(std::string location, std::string access_key_id, std::string secret_access_key)
 {
-	mConfiguration = shared_ptr<Configuration> (new Configuration(access_key_id, secret_access_key));
+	mConfiguration = shared_ptr<Configuration> (new Configuration(location, access_key_id, secret_access_key));
 }
 
 Context::Context(std::string config_file)

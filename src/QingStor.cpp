@@ -199,7 +199,7 @@ const char *qingstorGetLastError() {
 	return ErrorMessage;
 }
 
-qingstorContext qingstorInitContext(const char *access_key_id, const char *secret_access_key) {
+qingstorContext qingstorInitContext(const char *location, const char *access_key_id, const char *secret_access_key) {
 	PARAMETER_ASSERT(access_key_id != NULL && strlen(access_key_id) > 0, NULL, EINVAL);
 	PARAMETER_ASSERT(secret_access_key != NULL && strlen(secret_access_key) > 0, NULL, EINVAL);
 
@@ -207,8 +207,8 @@ qingstorContext qingstorInitContext(const char *access_key_id, const char *secre
 	try {
 		std::string str_access_key_id(access_key_id);
 		std::string str_secret_access_key(secret_access_key);
-
-		context = new Context(str_access_key_id, str_secret_access_key);
+		std::string str_location(location);
+		context = new Context(str_location, str_access_key_id, str_secret_access_key);
 		return new QingStorContextInternalWrapper(context);
 	} catch (const std::bad_alloc & e)
 	{
