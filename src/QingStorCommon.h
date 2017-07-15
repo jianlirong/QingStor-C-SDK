@@ -92,7 +92,14 @@ extern void Signature(HeaderContent *h, const char *path_with_query,
 					QSRequestType qsrt,
 					MemoryData *md);
 
-extern json_object* DoGetJSON(const char *host, const char *url, const char *bucket,
+extern json_object*
+DoGetJSON(const char *host, const char *url, const char *bucket,
+			const char *location,
+			const QSCredential *cred,
+			QSRequestType qsrt,
+			MemoryData *md, int retries = 1);
+
+extern json_object* DoGetJSON_Internal(const char *host, const char *url, const char *bucket,
 							const char *location,
 							const QSCredential *cred,
 							QSRequestType qsrt,

@@ -66,12 +66,12 @@ shared_ptr<ListBucketResult> Context::listBuckets(std::string location)
 			if (location.empty())
 			{
 				resp_body = DoGetJSON(mConfiguration->mHost.c_str(), sstr.str().c_str(), NULL,
-									NULL, &cred, QSRT_LIST_BUCKET, NULL);
+									NULL, &cred, QSRT_LIST_BUCKET, NULL, mConfiguration->mConnectionRetries);
 			}
 			else
 			{
 				resp_body = DoGetJSON(mConfiguration->mHost.c_str(), sstr.str().c_str(), NULL,
-									location.c_str(), &cred, QSRT_LIST_BUCKET, NULL);
+									location.c_str(), &cred, QSRT_LIST_BUCKET, NULL, mConfiguration->mConnectionRetries);
 			}
 			if (!resp_body)
 			{
@@ -147,7 +147,7 @@ shared_ptr<ListObjectResult> Context::listObjects(std::string bucket, std::strin
 
 		try {
 			resp_body = DoGetJSON(host.c_str(), sstr.str().c_str(),
-								bucket.c_str(), NULL, &cred, QSRT_LIST_OBJECT, NULL);
+								bucket.c_str(), NULL, &cred, QSRT_LIST_OBJECT, NULL, mConfiguration->mConnectionRetries);
 			if (!resp_body)
 			{
 				THROW(QingStorNetworkException, "could not list bucket \"%s\"", sstr.str().c_str());
@@ -393,7 +393,7 @@ shared_ptr<HeadObjectResult> Context::headObject(std::string bucket, std::string
 		QSCredential cred = {mConfiguration->mAccessKeyId, mConfiguration->mSecretAccessKey};
 
 		try {
-			resp_body = DoGetJSON(host.c_str(), sstr.str().c_str(), bucket.c_str(), NULL, &cred, QSRT_HEAD_OBJECT, NULL);
+			resp_body = DoGetJSON(host.c_str(), sstr.str().c_str(), bucket.c_str(), NULL, &cred, QSRT_HEAD_OBJECT, NULL, mConfiguration->mConnectionRetries);
 			if (!resp_body)
 			{
 				THROW(QingStorNetworkException, "could not head object \"%s\"", sstr.str().c_str());
@@ -450,7 +450,7 @@ void Context::createBucket(std::string location, std::string bucket)
 	do {
 		try {
 			resp_body = DoGetJSON(host.c_str(), url.c_str(), bucket.c_str(), NULL, &cred,
-											QSRT_CREATE_BUCKET, NULL);
+											QSRT_CREATE_BUCKET, NULL, mConfiguration->mConnectionRetries);
 		} catch (QingStorException & e)
 		{
 			/* always clean up */
@@ -494,7 +494,7 @@ void Context::deleteBucket(std::string location, std::string bucket)
 	do {
 		try {
 			resp_body = DoGetJSON(host.c_str(), url.c_str(), bucket.c_str(), NULL, &cred,
-											QSRT_DELETE_BUCKET, NULL);
+											QSRT_DELETE_BUCKET, NULL, mConfiguration->mConnectionRetries);
 		} catch (QingStorException & e)
 		{
 			/* always clean up */
@@ -532,7 +532,7 @@ void Context::deleteObject(std::string bucket, std::string key)
 	do {
 		try {
 			resp_body = DoGetJSON(host.c_str(), url.c_str(), bucket.c_str(), NULL, &cred,
-											QSRT_DELETE_OBJECT, NULL);
+											QSRT_DELETE_OBJECT, NULL, mConfiguration->mConnectionRetries);
 		} catch (QingStorException & e)
 		{
 			/* always clean up */

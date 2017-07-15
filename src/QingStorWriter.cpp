@@ -82,7 +82,7 @@ void QingStorWriter::initMultipartUpload(std::string host, std::string url, std:
 
 	try {
 		resp_body = DoGetJSON(host.c_str(), url.c_str(), bucket.c_str(), NULL,
-							cred, QSRT_INIT_MP_UPLOAD, NULL);
+							cred, QSRT_INIT_MP_UPLOAD, NULL, mConfiguration->mConnectionRetries);
 		if (!resp_body)
 		{
 			THROW(QingStorNetworkException, "could not init multipart upload");
@@ -164,7 +164,7 @@ bool QingStorWriter::uploadMultipart(std::string host, std::string url, std::str
 	md.sizeleft = length;
 
 	try {
-		resp_body = DoGetJSON(host.c_str(), url.c_str(), bucket.c_str(), NULL, cred, QSRT_UPLOAD_MP, &md);
+		resp_body = DoGetJSON(host.c_str(), url.c_str(), bucket.c_str(), NULL, cred, QSRT_UPLOAD_MP, &md, mConfiguration->mConnectionRetries);
 		if (resp_body)
 		{
 			json_object_put(resp_body);
@@ -304,7 +304,7 @@ bool QingStorWriter::completeMultipartUpload(std::string host, std::string url, 
 		md.sizeleft = strlen(body);
 
 		resp_body = DoGetJSON(host.c_str(), url.c_str(), bucket.c_str(), NULL,
-								cred, QSRT_COMP_MP_UPLOAD, &md);
+								cred, QSRT_COMP_MP_UPLOAD, &md, mConfiguration->mConnectionRetries);
 		if (resp_body)
 		{
 			json_object_put(resp_body);

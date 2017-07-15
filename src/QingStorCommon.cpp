@@ -220,6 +220,28 @@ DoGetJSON(const char *host, const char *url, const char *bucket,
 			const char *location,
 			const QSCredential *cred,
 			QSRequestType qsrt,
+			MemoryData *md, int retries)
+{
+	struct json_object *result = NULL;
+	int failing = 0;
+
+retry:
+	try {
+		result = DoGetJSON_Internal(host, url, bucket, location, cred, qsrt, md);
+	} catch (const QingStorException & e) {
+		if(++failing < retries) {
+			goto retry;
+		}
+		throw e;
+	}
+	return result;
+}
+
+json_object*
+DoGetJSON_Internal(const char *host, const char *url, const char *bucket,
+			const char *location,
+			const QSCredential *cred,
+			QSRequestType qsrt,
 			MemoryData *md)
 {
 	CURL *curl;
