@@ -53,18 +53,18 @@ static const char *CONFIG_KEY_CHUNK_SIZE = "chunk_size";
 
 static const char *CONFIG_KEY_LOG_LEVEL = "log_level";
 
-Configuration::Configuration(std::string location, std::string access_key_id, std::string secret_access_key)
+Configuration::Configuration(std::string location, std::string access_key_id, std::string secret_access_key, int64_t chunk_size)
 {
 	mAccessKeyId = access_key_id;
 	mSecretAccessKey = secret_access_key;
 	mLocation = location;
+	mChunkSize = chunk_size;
 
 	mHost = "qingstor.com";
 	mPort = 443;
 	mProtocol = "https";
 	mConnectionRetries = 3;
 	mNConnections = 3;
-	mChunkSize = (32 * 1024 * 1024);
 	mLogLevel = "debug";
 }
 

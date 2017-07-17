@@ -29,7 +29,7 @@ namespace QingStor {
 namespace Internal {
 class Configuration {
 public:
-	Configuration(std::string location, std::string access_key_id, std::string secret_access_key);
+	Configuration(std::string location, std::string access_key_id, std::string secret_access_key, int64_t chunk_size);
 
 	Configuration(std::string config_file);
 

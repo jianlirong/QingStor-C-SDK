@@ -71,7 +71,7 @@ public:
 
 class Context {
 public:
-	Context(std::string location, std::string access_key_id, std::string secret_access_key);
+	Context(std::string location, std::string access_key_id, std::string secret_access_key, int64_t chunk_size);
 
 	Context(std::string config_file);
 
