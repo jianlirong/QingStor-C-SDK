@@ -213,11 +213,8 @@ void QingStorWriter::doSend(const char *data, int32_t length)
 
 void QingStorWriter::flush()
 {
-	if (mWritePos != 0)
-	{
-		doSend(mBuffer, mWritePos);
-		mWritePos = 0;
-	}
+	doSend(mBuffer, mWritePos);
+	mWritePos = 0;
 
 	return;
 }
