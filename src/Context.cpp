@@ -583,15 +583,6 @@ bool Context::extractHeadObjectContent(shared_ptr<HeadObjectResult> result, stru
 	}
 	result->last_modified = std::string(json_object_get_string(value));
 
-	/*
-	 * get etag
-	 */
-	if (!json_object_object_get_ex(resp_body, "ETag", &value))
-	{
-		return false;
-	}
-	result->etag = std::string(json_object_get_string(value));
-
 	return true;
 }
 
