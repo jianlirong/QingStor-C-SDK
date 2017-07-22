@@ -399,7 +399,7 @@ qingstorObject qingstorGetObject(qingstorContext context, const char *bucket,
 	PARAMETER_ASSERT(context, NULL, EINVAL);
 	PARAMETER_ASSERT(bucket != NULL && strlen(bucket) > 0, NULL, EINVAL);
 	PARAMETER_ASSERT(key != NULL && strlen(key) > 0, NULL, EINVAL);
-	PARAMETER_ASSERT(range_end >= range_begin, NULL, EINVAL);
+	PARAMETER_ASSERT(range_end >= range_start, NULL, EINVAL);
 
 	QingStorObjectInternalWrapper *result = NULL;
 	try {
