@@ -34,10 +34,24 @@
 namespace QingStor {
 namespace Internal {
 
+/*
+ * extend parameter for reading
+ */
+class RangeInfo {
+public:
+	int64_t start;
+	int64_t end;
+};
+
+/*
+ * each object contains a range
+ * which allow to read more flexible
+ */
 class ObjectInfo {
 public:
 	std::string key;
 	int64_t size;
+	RangeInfo range;
 };
 
 class ListObjectResult {

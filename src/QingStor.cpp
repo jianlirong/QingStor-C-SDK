@@ -74,6 +74,7 @@ using QingStor::Internal::ListObjectResult;
 using QingStor::Internal::ListBucketResult;
 using QingStor::Internal::HeadObjectResult;
 using QingStor::Internal::ObjectInfo;
+using QingStor::Internal::RangeInfo;
 using QingStor::Internal::QingStorReader;
 using QingStor::Internal::QingStorWriter;
 
@@ -393,11 +394,12 @@ qingstorListObjectResult* qingstorListObjects(qingstorContext context, const cha
 }
 
 qingstorObject qingstorGetObject(qingstorContext context, const char *bucket,
-								const char *key)
+								const char *key, int64_t range_start, int64_t range_end)
 {
 	PARAMETER_ASSERT(context, NULL, EINVAL);
 	PARAMETER_ASSERT(bucket != NULL && strlen(bucket) > 0, NULL, EINVAL);
 	PARAMETER_ASSERT(key != NULL && strlen(key) > 0, NULL, EINVAL);
+	PARAMETER_ASSERT(range_end >= range_begin, NULL, EINVAL);
 
 	QingStorObjectInternalWrapper *result = NULL;
 	try {
@@ -406,7 +408,10 @@ qingstorObject qingstorGetObject(qingstorContext context, const char *bucket,
 			std::string str_key(key);
 
 			shared_ptr<HeadObjectResult> res = context->getContext().headObject(str_bucket, str_key);
-			ObjectInfo object = {str_key, res->content_length};
+			range_start = (range_start < 0) ? 0 : range_start;
+			range_end = (range_end < 0) ? res->content_length - 1 : range_end;
+			RangeInfo range = {range_start, range_end};
+			ObjectInfo object = {str_key, res->content_length, range};
 			QingStorReader *reader = new QingStorReader(context->getContext().configuration(), str_bucket, object);
 			result->setReader(true);
 			result->setRW((void *) reader);

@@ -31,13 +31,15 @@
 namespace QingStor {
 namespace Internal {
 
-QingStorReader::QingStorReader(shared_ptr<Configuration> configuration, std::string bucket, ObjectInfo object)
+QingStorReader::QingStorReader(shared_ptr<Configuration> configuration, std::string bucket,
+							ObjectInfo object)
 							: QingStorRWBase(configuration, bucket, object)
 {
 	std::list<shared_ptr<ObjectInfo> > objects;
 	shared_ptr<ObjectInfo> obj (new ObjectInfo());
 	obj->key = object.key;
 	obj->size = object.size;
+	obj->range = object.range;
 	objects.push_back(obj);
 
 	setupPipeline(objects);
@@ -107,17 +109,17 @@ void QingStorReader::setupPipeline(std::list<shared_ptr<ObjectInfo> > objects)
 
 		sstr<<mConfiguration->mProtocol<<"://"<<host<<"/"<<object->key;
 
-		LOG(DEBUG1, "key: %s, size: %ld", sstr.str().c_str(), object->size);
+		LOG(DEBUG1, "key: %s, size: %ld, range: %ld-%ld", sstr.str().c_str(), object->size, object->range.start, object->range.end);
 
 		/*
 		 * Divide the file into chunks of requested size.
 		 */
-		offset = 0;
+		offset = object->range.start;
 		do {
-			if (chunkSize == -1 || offset + chunkSize > object->size)
+			if (chunkSize == -1 || offset + chunkSize > object->range.end)
 			{
 				/* last chunk */
-				len = -1;
+				len = object->range.end - offset + 1;
 			}
 			else
 			{
@@ -128,7 +130,7 @@ void QingStorReader::setupPipeline(std::list<shared_ptr<ObjectInfo> > objects)
 										&cred, buffSize, offset, len));
 			mPipeline->add(fetcher);
 			offset += len;
-		} while (len != -1);
+		} while (offset <= object->range.end);
 
 		sstr.str("");
 		sstr.clear();

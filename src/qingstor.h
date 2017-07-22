@@ -163,7 +163,8 @@ qingstorListObjectResult* qingstorListObjects(qingstorContext context, const cha
  * @return						An object handler if exists; otherwise NULL.
  */
 qingstorObject qingstorGetObject(qingstorContext context, const char *bucket,
-									const char *key);
+									const char *key, int64_t range_start = -1, int64_t range_end = -1);
+
 
 /**
  * qingstorPutObject - create a new object for write
