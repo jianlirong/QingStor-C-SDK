@@ -228,13 +228,13 @@ DoGetJSON(const char *host, const char *url, const char *bucket,
 retry:
 	try {
 		result = DoGetJSON_Internal(host, url, bucket, location, cred, qsrt, md);
-	} catch (const QingStorException & e) {
+	} catch (...) {
 		if(++failing < retries) {
 			LOG(WARNING, "qingstor request is falied, start to retry");
  			goto retry;
 		} else {
 			LOG(LOG_ERROR, "qingstor request is failed after retried %d times", retries);
-			throw e;
+			throw;
 		}
 	}
 	return result;
@@ -559,6 +559,8 @@ json_object* ParseHttpHeader(const char *content)
 		if ((pos = str.find(":")) != std::string::npos)
 		{
 			std::string key = str.substr(0, pos);
+			if (pos + 2 >= str.length())
+				return NULL;
 			std::string value = str.substr(pos + 2);
 			std::size_t epos = value.find("\r");
 			if (epos != std::string::npos)
