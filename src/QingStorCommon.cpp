@@ -230,7 +230,8 @@ retry:
 		result = DoGetJSON_Internal(host, url, bucket, location, cred, qsrt, md);
 	} catch (const QingStorException & e) {
 		if(++failing < retries) {
-			goto retry;
+			LOG(WARNING, "qingstor request is falied, start to retry %d", failing);
+ 			goto retry;
 		}
 		throw e;
 	}
@@ -405,6 +406,9 @@ DoGetJSON_Internal(const char *host, const char *url, const char *bucket,
 						THROW(QingStorNetworkException, "HTTP response header is empty");
 					}
 					result = ParseHttpHeader(yamlInfo.data);
+					if (!result) {
+						THROW(QingStorNetworkException, "HTTP Header response could not parse into JSON: %s with qsrt as %d", yamlInfo.data, qsrt);
+					}
 					delete yamlInfo.data;
 					yamlInfo.data = NULL;
 				}
