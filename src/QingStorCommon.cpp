@@ -230,10 +230,12 @@ retry:
 		result = DoGetJSON_Internal(host, url, bucket, location, cred, qsrt, md);
 	} catch (const QingStorException & e) {
 		if(++failing < retries) {
-			LOG(WARNING, "qingstor request is falied, start to retry %d", failing);
+			LOG(WARNING, "qingstor request is falied, start to retry");
  			goto retry;
+		} else {
+			LOG(LOG_ERROR, "qingstor request is failed after retried %d times", retries);
+			throw e;
 		}
-		throw e;
 	}
 	return result;
 }
