@@ -163,7 +163,7 @@ qingstorListObjectResult* qingstorListObjects(qingstorContext context, const cha
  * @return						An object handler if exists; otherwise NULL.
  */
 qingstorObject qingstorGetObject(qingstorContext context, const char *bucket,
-									const char *key, int64_t range_start = -1, int64_t range_end = -1);
+									const char *key, int64_t range_start, int64_t range_end);
 
 
 /**
@@ -184,6 +184,16 @@ qingstorObject qingstorPutObject(qingstorContext context, const char *bucket,
  */
 qingstorHeadObjectResult* qingstorHeadObject(qingstorContext context, const char *bucket,
 									const char *key);
+
+/**
+ * qingstorCancelObject - cancel a object created for read or write
+ *
+ * @param object				The targeted object to be cancel.
+ * @return						Return true on success, false on error.
+ * 								On error, errno will be set appropriately.
+ */
+bool qingstorCancelObject(qingstorContext context, qingstorObject object);
+
 /**
  * qingstorCloseObject - close a object created for read or write
  *

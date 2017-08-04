@@ -41,6 +41,8 @@ public:
 	}
 	void transferData(const char *buffer, int32_t length);
 
+	void cancel();
+
 	void close();
 
 private:
@@ -55,6 +57,8 @@ private:
 	void flush();
 
 	void initMultipartUpload(std::string host, std::string url, std::string bucket, QSCredential *cred);
+
+	bool abortMultipartUpload(std::string host, std::string url, std::string bucket, QSCredential *cred);
 
 	bool uploadMultipart(std::string host, std::string url, std::string bucket, QSCredential * cred,
 				const char *data, int32_t length);

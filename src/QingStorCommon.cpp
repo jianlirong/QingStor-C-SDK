@@ -49,7 +49,8 @@ Signature(HeaderContent *h, const char *path_with_query,
 	/* CONTENT_LENGTH is not a port of StringToSign */
 	if (QSRT_LIST_OBJECT == qsrt || QSRT_INIT_MP_UPLOAD == qsrt ||
 			QSRT_GET_DATA == qsrt || QSRT_LIST_BUCKET == qsrt ||
-			QSRT_HEAD_OBJECT == qsrt || QSRT_DELETE_OBJECT == qsrt)
+			QSRT_HEAD_OBJECT == qsrt || QSRT_DELETE_OBJECT == qsrt ||
+			QSRT_ABORT_MP_UPLOAD == qsrt)
 	{
 		HeaderContent_Add(h, CONTENTLENGTH, "0");
 	}
@@ -66,7 +67,7 @@ Signature(HeaderContent *h, const char *path_with_query,
 	strftime(timebuf, 64, "%a, %d %b %Y %H:%M:%S GMT", tm_info);
 	HeaderContent_Add(h, DATE, timebuf);
 
-	if (QSRT_LIST_OBJECT == qsrt || QSRT_GET_DATA == qsrt || QSRT_LIST_BUCKET == qsrt)
+	if (QSRT_LIST_OBJECT == qsrt || QSRT_GET_DATA == qsrt)
 	{
 		sstr<<"GET\n\n\n"<<timebuf<<"\n"<<path_with_query;
 	}
@@ -74,7 +75,7 @@ Signature(HeaderContent *h, const char *path_with_query,
 	{
 		sstr<<"HEAD\n\n\n"<<timebuf<<"\n"<<path_with_query;
 	}
-	else if (QSRT_DELETE_OBJECT == qsrt || QSRT_DELETE_BUCKET == qsrt)
+	else if (QSRT_DELETE_OBJECT == qsrt || QSRT_DELETE_BUCKET == qsrt || QSRT_ABORT_MP_UPLOAD == qsrt)
 	{
 		sstr<<"DELETE\n\n\n"<<timebuf<<"\n"<<path_with_query;
 	}
@@ -230,10 +231,10 @@ retry:
 		result = DoGetJSON_Internal(host, url, bucket, location, cred, qsrt, md);
 	} catch (...) {
 		if(++failing < retries) {
-			LOG(WARNING, "qingstor request is falied, start to retry");
+			LOG(WARNING, "qingstor request type %d is failed, retrying", qsrt);
  			goto retry;
 		} else {
-			LOG(LOG_ERROR, "qingstor request is failed after retried %d times", retries);
+			LOG(LOG_ERROR, "qingstor request type %d is failed after retried %d times", qsrt, retries);
 			throw;
 		}
 	}
@@ -262,6 +263,7 @@ DoGetJSON_Internal(const char *host, const char *url, const char *bucket,
 		{
 			THROW(OutOfMemoryException, "cound not create curl instance");
 		}
+		curl_easy_setopt(curl, CURLOPT_VERBOSE, url);
 		curl_easy_setopt(curl, CURLOPT_URL, url);
 		curl_easy_setopt(curl, CURLOPT_FORBID_REUSE, 1L);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&jsonInfo);
@@ -272,7 +274,7 @@ DoGetJSON_Internal(const char *host, const char *url, const char *bucket,
 			curl_easy_setopt(curl, CURLOPT_HEADERDATA, (void *)&yamlInfo);
 			curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, ParserCallback);
 		}
-		if (QSRT_DELETE_OBJECT == qsrt || QSRT_DELETE_BUCKET == qsrt)
+		if (QSRT_DELETE_OBJECT == qsrt || QSRT_DELETE_BUCKET == qsrt || QSRT_ABORT_MP_UPLOAD == qsrt)
 		{
 			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
 		}

@@ -206,6 +206,10 @@ qingstorContext qingstorInitContext(const char *location, const char *access_key
 
 	Context *context;
 	try {
+		signal(SIGINT, QingStor::Internal::handle_signals);
+		signal(SIGQUIT, QingStor::Internal::handle_signals);
+		signal(SIGTERM, QingStor::Internal::handle_signals);
+
 		std::string str_access_key_id(access_key_id);
 		std::string str_secret_access_key(secret_access_key);
 		std::string str_location(location);
@@ -230,6 +234,10 @@ qingstorContext qingstorInitContextFromFile(const char *config_file) {
 
 	Context *context;
 	try {
+		signal(SIGINT, QingStor::Internal::handle_signals);
+		signal(SIGQUIT, QingStor::Internal::handle_signals);
+		signal(SIGTERM, QingStor::Internal::handle_signals);
+
 		std::string str_config_file(config_file);
 		context = new Context(str_config_file);
 		return new QingStorContextInternalWrapper(context);
@@ -512,6 +520,32 @@ int qingstorDeleteObject(qingstorContext context, const char *bucket,
 	}
 
 	return -1;
+}
+
+bool qingstorCancelObject(qingstorContext context, qingstorObject object)
+{
+	PARAMETER_ASSERT(context, -1, EINVAL);
+	PARAMETER_ASSERT(object, -1, EINVAL);
+
+	try {
+		if (object) {
+			if (object->isReader()) {
+				return false;
+			}
+			else {
+				object->getWriter().cancel();
+			}
+		}
+		return true;
+	} catch (const std::bad_alloc & e) {
+		SetErrorMessage("Out of memory");
+		errno = ENOMEM;
+	} catch (...) {
+		SetLastException(QingStor::current_exception());
+		handleException(QingStor::current_exception());
+	}
+
+	return false;
 }
 
 int qingstorCloseObject(qingstorContext context, qingstorObject object)

@@ -59,6 +59,10 @@ void QingStorWriter::transferData(const char *buffer, int32_t buffsize)
 	{
 		while (mWritePos != mBuffSize)
 		{
+			CHECKOPERATIONCANCELED_BEGIN();
+			cancel();
+			CHECKOPERATIONCANCELED_END();
+
 			mBuffer[mWritePos++] = buffer[buffPos++];
 			if (buffPos == buffsize)
 			{
@@ -245,6 +249,31 @@ void QingStorWriter::close()
 	return;
 }
 
+void QingStorWriter::cancel()
+{
+	if (mBuffer) {
+		delete [] mBuffer;
+		mBuffer = NULL;
+	}
+
+	if(mPartNum > 0) {
+		std::stringstream sstr;
+		sstr<<mBucket<<"."<<mConfiguration->mLocation<<"."<<mConfiguration->mHost;
+		std::string host = sstr.str();
+		sstr.str("");
+		sstr.clear();
+
+		sstr<<mConfiguration->mProtocol<<"://"<<host<<"/"<<mKey;
+		sstr<<"?upload_id="<<mUploadId;
+		std::string url = sstr.str();
+		sstr.str("");
+		sstr.clear();
+		abortMultipartUpload(host.c_str(), url.c_str(), mBucket, &mCred);
+		mPartNum = 0;
+	}
+	return;
+}
+
 bool QingStorWriter::completeMultipartUpload(std::string host, std::string url, std::string bucket, QSCredential *cred)
 {
 	struct json_object *resp_body = NULL;
@@ -319,6 +348,26 @@ bool QingStorWriter::completeMultipartUpload(std::string host, std::string url, 
 		if (req_body)
 		{
 			json_object_put(req_body);
+		}
+		throw e;
+	}
+
+	return (resp_body == NULL);
+}
+
+bool QingStorWriter::abortMultipartUpload(std::string host, std::string url, std::string bucket, QSCredential *cred)
+{
+	struct json_object *resp_body = NULL;
+
+	try {
+		resp_body = DoGetJSON(host.c_str(), url.c_str(), bucket.c_str(), NULL,
+								cred, QSRT_ABORT_MP_UPLOAD, NULL, mConfiguration->mConnectionRetries);
+		if (resp_body) {
+			json_object_put(resp_body);
+		}
+	} catch (QingStorException & e) {
+		if (resp_body) {
+			json_object_put(resp_body);
 		}
 		throw e;
 	}

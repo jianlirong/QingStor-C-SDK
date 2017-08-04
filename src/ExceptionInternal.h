@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include <string>
 #include <sstream>
+#include <signal.h>
 
 #include "Function.h"
 #include "StackPrinter.h"
@@ -253,6 +254,22 @@ namespace Internal {
  * @throw QingStorCanceled
  */
 bool CheckOperationCanceled();
+
+extern bool isCanceled;
+
+void handle_signals(int signo);
+
+bool OperationInterrupt();
+
+#define CHECKOPERATIONCANCELED_BEGIN()	\
+	do {	\
+		if (OperationInterrupt()) {
+
+#define CHECKOPERATIONCANCELED_END()	\
+		THROW(QingStorCanceled, "Operation has been canceled by the user.");	\
+		}	\
+	} while(0)
+
 
 /**
  * Get a exception's detail message.

@@ -35,6 +35,22 @@ function<bool(void)> ChecnOperationCanceledCallback;
 
 namespace Internal {
 
+bool isCanceled = false;
+
+void handle_signals(int signo)
+{
+	switch (signo) {
+	case SIGINT:
+	case SIGQUIT:
+	case SIGTERM:
+		if(!isCanceled)
+			isCanceled = true;
+		break;
+	default:
+		break;
+	}
+}
+
 bool CheckOperationCanceled() {
     if (ChecnOperationCanceledCallback && ChecnOperationCanceledCallback()) {
         THROW(QingStorCanceled, "Operation has been canceled by the user.");
