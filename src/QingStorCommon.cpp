@@ -263,7 +263,6 @@ DoGetJSON_Internal(const char *host, const char *url, const char *bucket,
 		{
 			THROW(OutOfMemoryException, "cound not create curl instance");
 		}
-		curl_easy_setopt(curl, CURLOPT_VERBOSE, url);
 		curl_easy_setopt(curl, CURLOPT_URL, url);
 		curl_easy_setopt(curl, CURLOPT_FORBID_REUSE, 1L);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&jsonInfo);
