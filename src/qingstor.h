@@ -192,7 +192,7 @@ qingstorHeadObjectResult* qingstorHeadObject(qingstorContext context, const char
  * @return						Return true on success, false on error.
  * 								On error, errno will be set appropriately.
  */
-bool qingstorCancelObject(qingstorContext context, qingstorObject object);
+int qingstorCancelObject(qingstorContext context, qingstorObject object);
 
 /**
  * qingstorCloseObject - close a object created for read or write

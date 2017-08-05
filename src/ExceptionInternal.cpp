@@ -35,7 +35,7 @@ function<bool(void)> ChecnOperationCanceledCallback;
 
 namespace Internal {
 
-bool isCanceled = false;
+volatile bool isCanceled = false;
 
 void handle_signals(int signo)
 {
@@ -49,6 +49,11 @@ void handle_signals(int signo)
 	default:
 		break;
 	}
+}
+
+bool OperationInterrupt()
+{
+	return isCanceled;
 }
 
 bool CheckOperationCanceled() {

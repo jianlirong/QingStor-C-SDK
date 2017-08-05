@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <qingstor/qingstor.h>
+#include "qingstor/qingstor.h"
 
 const char *access_key_id = "access_key_id";
 const char *secret_access_key = "secret_access_key";
-
-
+const char *location = "pek3a";
+int64_t buffer_size = 4 << 20;
 /*
  * test list objects
  */
@@ -14,7 +14,7 @@ void testListObjects()
 {
 	printf("testListObjects......\n");
 	int i;
-	qingstorContext qsContext = qingstorInitContext(access_key_id, secret_access_key);
+	qingstorContext qsContext = qingstorInitContext(location, access_key_id, secret_access_key, buffer_size);
 	qingstorListObjectResult* result = qingstorListObjects(qsContext, "hdw-hashdata-cn", "tpch");
 	
 	printf("name=%s, prefix=%s, limit=%d, nObjects=%d\n", result->name, result->prefix,
@@ -38,7 +38,7 @@ void testListBuckets_without_location()
 {
 	printf("testListBuckets_without_location.......\n");
 	int i;
-	qingstorContext qsContext = qingstorInitContext(access_key_id, secret_access_key);
+	qingstorContext qsContext = qingstorInitContext(location, access_key_id, secret_access_key, buffer_size);
 	
 	int count = 0;
     qingstorBucketInfo *buckets = qingstorListBuckets(qsContext, NULL, &count);
@@ -61,7 +61,7 @@ void testListBuckets_with_location()
 {
         printf("testListBuckets_with_location.......\n");
         int i;
-        qingstorContext qsContext = qingstorInitContext(access_key_id, secret_access_key);
+        qingstorContext qsContext = qingstorInitContext(location, access_key_id, secret_access_key, buffer_size);
 
         int count = 0;
         qingstorBucketInfo *buckets = qingstorListBuckets(qsContext, "sh1a", &count);
@@ -83,7 +83,7 @@ void testListBuckets_with_location()
 void testHeadObject_positive()
 {
 	printf("testHeadObject_positive.............\n");
-	qingstorContext qsContext = qingstorInitContext(access_key_id, secret_access_key);
+	qingstorContext qsContext = qingstorInitContext(location, access_key_id, secret_access_key, buffer_size);
 
 	qingstorHeadObjectResult *result = qingstorHeadObject(qsContext, "hellobucket", "badformatted");
 	if (result > 0)
@@ -105,7 +105,7 @@ void testHeadObject_positive()
 void testHeadObject_negative()
 {
         printf("testHeadObject_negative.............\n");
-        qingstorContext qsContext = qingstorInitContext(access_key_id, secret_access_key);
+        qingstorContext qsContext = qingstorInitContext(location, access_key_id, secret_access_key, buffer_size);
 
         qingstorHeadObjectResult *result = qingstorHeadObject(qsContext, "hellobucket", "badobject");
         if (result > 0)
@@ -127,19 +127,20 @@ void testHeadObject_negative()
 void testGetObject()
 {
 	printf("testGetObject...................\n");
-	qingstorContext qsContext = qingstorInitContext(access_key_id, secret_access_key);
+	qingstorContext qsContext = qingstorInitContext(location, access_key_id, secret_access_key, buffer_size);
 
-	qingstorObject object = qingstorGetObject(qsContext, "hdw-hashdata-cn", "tpch10g/partsupp/gpqsext.0.0");
+	int64_t start = 0, end = 10 * 1024 * 1024 - 1;
+	qingstorObject object = qingstorGetObject(qsContext, "hellobucket", "zeros", start, end);
 	if (object)
 	{
-		char buffer[1024];
-		int rnum = 0;
-		while ((rnum = qingstorRead(qsContext, object, buffer, 1023)) > 0)
+		char buffer[1 * 1024 * 1024];
+		int64_t rnum = 0;
+		int64_t bytes_left = 10 * 1024 * 1024;
+		while (bytes_left > 0)
 		{
-			buffer[rnum] = '\0';
-			printf("%s", buffer);
+			rnum = qingstorRead(qsContext, object, buffer, 1 * 1024 * 1024);
+			bytes_left -= rnum;
 		}
-		printf("\n");
 		qingstorCloseObject(qsContext, object);
 	}
 	else
@@ -153,17 +154,17 @@ void testGetObject()
 void testPutObject_positive()
 {
 	printf("testPutObject.....................\n");
-	qingstorContext qsContext = qingstorInitContext(access_key_id, secret_access_key);
+	qingstorContext qsContext = qingstorInitContext(location, access_key_id, secret_access_key, buffer_size);
 
 	qingstorObject object = qingstorPutObject(qsContext, "hellobucket", "zeros");
 	if (object)
 	{
-		char buffer[10240] = {0};
-		const int iter = 1024;
+		char buffer[1024 * 1024 * 1] = {0};
+		const int iter = 1;
 		int i;
 		for (i = 0; i < iter; i++)
 		{
-			if (qingstorWrite(qsContext, object, buffer, 10240) != 10240)
+			if (qingstorWrite(qsContext, object, buffer, 1024 * 1024 * 1) != 1 * 1024 * 1024)
 			{
 				printf("qingstor write failed with error message: %s\n", qingstorGetLastError());
 				return;
@@ -181,13 +182,40 @@ void testPutObject_positive()
 
 void testPutObject_negative()
 {
-	testPutObject_positive();
+	printf("testPutObject.....................\n");
+	qingstorContext qsContext = qingstorInitContext(location, access_key_id, secret_access_key, buffer_size);
+
+	qingstorObject object = qingstorPutObject(qsContext, "hellobucket", "zeros");
+	if (object)
+	{
+		char buffer[1024 * 1024 * 1] = {0};
+		const int iter = 1024;
+		int i;
+		for (i = 0; i < iter; i++)
+		{
+			if(i == 512) {
+				qingstorCancelObject(qsContext, object);
+				break;
+			}
+			if (qingstorWrite(qsContext, object, buffer, 1024 * 1024 * 1) != 1 * 1024 * 1024)
+			{
+				printf("qingstor write failed with error message: %s\n", qingstorGetLastError());
+			}
+		}
+		qingstorCloseObject(qsContext, object);
+	}
+	else
+	{
+		printf("qingstor put object failed with error message: %s\n", qingstorGetLastError());
+	}
+	qingstorDestroyContext(qsContext);
+	return;
 }
 
 void testDeleteObject_positive()
 {
 	printf("testDeleteObject.....................\n");
-	qingstorContext qsContext = qingstorInitContext(access_key_id, secret_access_key);
+	qingstorContext qsContext = qingstorInitContext(location, access_key_id, secret_access_key, buffer_size);
 
 	if (qingstorDeleteObject(qsContext, "hellobucket", "zeros") == 0)
 	{
@@ -204,7 +232,7 @@ void testDeleteObject_positive()
 void testCreateBucket_positive()
 {
 	printf("testCreateBucket......................\n");
-	qingstorContext qsContext = qingstorInitContext(access_key_id, secret_access_key);
+	qingstorContext qsContext = qingstorInitContext(location, access_key_id, secret_access_key, buffer_size);
 
 	if (qingstorCreateBucket(qsContext, "pek3a", "lirongbucket") == 0)
 	{
@@ -221,7 +249,7 @@ void testCreateBucket_positive()
 void testDeleteBucket_positive()
 {
 	printf("testDeleteBucket......................\n");
-	qingstorContext qsContext = qingstorInitContext(access_key_id, secret_access_key);
+	qingstorContext qsContext = qingstorInitContext(location, access_key_id, secret_access_key, buffer_size);
 
 	if (qingstorDeleteBucket(qsContext, "pek3a", "lirongbucket") == 0)
 	{
@@ -237,19 +265,16 @@ void testDeleteBucket_positive()
 
 int main(int argc, char *argv[])
 {
-	/**
-	testListObjects();
-	testListBuckets_without_location();
-	testListBuckets_with_location();
-	testHeadObject_positive();
-	testHeadObject_negative();
-	testGetObject();
-	testPutObject_positive();
+	//testListObjects();
+	//testListBuckets_without_location();
+	//testListBuckets_with_location();
+	//testHeadObject_positive();
+	//testHeadObject_negative();
+	//testGetObject();
+	//testPutObject_positive();
 	testPutObject_negative();
-	testDeleteObject_positive();
-	**/
-	testCreateBucket_positive();
-	testDeleteBucket_positive();
-
+	//testDeleteObject_positive();
+	//testCreateBucket_positive();
+	//testDeleteBucket_positive();
 	return 0;
 }

@@ -225,6 +225,9 @@ void QingStorWriter::flush()
 
 void QingStorWriter::close()
 {
+	if(isCanceled)
+		return;
+
 	flush();
 
 	std::stringstream sstr;

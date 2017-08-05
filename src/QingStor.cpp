@@ -206,6 +206,8 @@ qingstorContext qingstorInitContext(const char *location, const char *access_key
 
 	Context *context;
 	try {
+		// you can set the flag isCanceled through the caller
+		// then these signal code will be unnecessary
 		signal(SIGINT, QingStor::Internal::handle_signals);
 		signal(SIGQUIT, QingStor::Internal::handle_signals);
 		signal(SIGTERM, QingStor::Internal::handle_signals);
@@ -234,6 +236,8 @@ qingstorContext qingstorInitContextFromFile(const char *config_file) {
 
 	Context *context;
 	try {
+		// you can set the flag isCanceled through the caller
+		// then these signal code will be unnecessary
 		signal(SIGINT, QingStor::Internal::handle_signals);
 		signal(SIGQUIT, QingStor::Internal::handle_signals);
 		signal(SIGTERM, QingStor::Internal::handle_signals);
@@ -522,7 +526,7 @@ int qingstorDeleteObject(qingstorContext context, const char *bucket,
 	return -1;
 }
 
-bool qingstorCancelObject(qingstorContext context, qingstorObject object)
+int qingstorCancelObject(qingstorContext context, qingstorObject object)
 {
 	PARAMETER_ASSERT(context, -1, EINVAL);
 	PARAMETER_ASSERT(object, -1, EINVAL);
@@ -530,13 +534,14 @@ bool qingstorCancelObject(qingstorContext context, qingstorObject object)
 	try {
 		if (object) {
 			if (object->isReader()) {
-				return false;
+				return -1;
 			}
 			else {
 				object->getWriter().cancel();
 			}
+			QingStor::Internal::isCanceled = true;
 		}
-		return true;
+		return 0;
 	} catch (const std::bad_alloc & e) {
 		SetErrorMessage("Out of memory");
 		errno = ENOMEM;
@@ -545,7 +550,7 @@ bool qingstorCancelObject(qingstorContext context, qingstorObject object)
 		handleException(QingStor::current_exception());
 	}
 
-	return false;
+	return -1;
 }
 
 int qingstorCloseObject(qingstorContext context, qingstorObject object)

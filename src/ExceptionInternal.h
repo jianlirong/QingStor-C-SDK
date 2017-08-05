@@ -255,7 +255,7 @@ namespace Internal {
  */
 bool CheckOperationCanceled();
 
-extern bool isCanceled;
+extern volatile bool isCanceled;
 
 void handle_signals(int signo);
 
