@@ -49,6 +49,7 @@ QingStorWriter::QingStorWriter(shared_ptr<Configuration> configuration, std::str
 	mPartNum = 0;
 	mBuffSize = configuration->mChunkSize;
 	mWritePos = 0;
+	mCanceled = false;
 	mBuffer = new char[mBuffSize];
 }
 
@@ -59,10 +60,6 @@ void QingStorWriter::transferData(const char *buffer, int32_t buffsize)
 	{
 		while (mWritePos != mBuffSize)
 		{
-			CHECKOPERATIONCANCELED_BEGIN();
-			cancel();
-			CHECKOPERATIONCANCELED_END();
-
 			mBuffer[mWritePos++] = buffer[buffPos++];
 			if (buffPos == buffsize)
 			{
@@ -225,7 +222,13 @@ void QingStorWriter::flush()
 
 void QingStorWriter::close()
 {
-	if(isCanceled)
+	if (mBuffer)
+	{
+		delete [] mBuffer;
+		mBuffer = NULL;
+	}
+
+	if(mCanceled)
 		return;
 
 	flush();
@@ -244,21 +247,11 @@ void QingStorWriter::close()
 
 	completeMultipartUpload(host.c_str(), url.c_str(), mBucket, &mCred);
 
-	if (mBuffer)
-	{
-		delete [] mBuffer;
-		mBuffer = NULL;
-	}
 	return;
 }
 
 void QingStorWriter::cancel()
 {
-	if (mBuffer) {
-		delete [] mBuffer;
-		mBuffer = NULL;
-	}
-
 	if(mPartNum > 0) {
 		std::stringstream sstr;
 		sstr<<mBucket<<"."<<mConfiguration->mLocation<<"."<<mConfiguration->mHost;
@@ -274,6 +267,7 @@ void QingStorWriter::cancel()
 		abortMultipartUpload(host.c_str(), url.c_str(), mBucket, &mCred);
 		mPartNum = 0;
 	}
+	mCanceled = true;
 	return;
 }
 

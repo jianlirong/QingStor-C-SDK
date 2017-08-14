@@ -206,12 +206,6 @@ qingstorContext qingstorInitContext(const char *location, const char *access_key
 
 	Context *context;
 	try {
-		// you can set the flag isCanceled through the caller
-		// then these signal code will be unnecessary
-		signal(SIGINT, QingStor::Internal::handle_signals);
-		signal(SIGQUIT, QingStor::Internal::handle_signals);
-		signal(SIGTERM, QingStor::Internal::handle_signals);
-
 		std::string str_access_key_id(access_key_id);
 		std::string str_secret_access_key(secret_access_key);
 		std::string str_location(location);
@@ -236,12 +230,6 @@ qingstorContext qingstorInitContextFromFile(const char *config_file) {
 
 	Context *context;
 	try {
-		// you can set the flag isCanceled through the caller
-		// then these signal code will be unnecessary
-		signal(SIGINT, QingStor::Internal::handle_signals);
-		signal(SIGQUIT, QingStor::Internal::handle_signals);
-		signal(SIGTERM, QingStor::Internal::handle_signals);
-
 		std::string str_config_file(config_file);
 		context = new Context(str_config_file);
 		return new QingStorContextInternalWrapper(context);
@@ -539,7 +527,6 @@ int qingstorCancelObject(qingstorContext context, qingstorObject object)
 			else {
 				object->getWriter().cancel();
 			}
-			QingStor::Internal::isCanceled = true;
 		}
 		return 0;
 	} catch (const std::bad_alloc & e) {

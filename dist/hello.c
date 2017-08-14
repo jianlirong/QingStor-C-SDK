@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <signal.h>
 #include "qingstor/qingstor.h"
 
 const char *access_key_id = "access_key_id";
@@ -16,10 +16,10 @@ void testListObjects()
 	int i;
 	qingstorContext qsContext = qingstorInitContext(location, access_key_id, secret_access_key, buffer_size);
 	qingstorListObjectResult* result = qingstorListObjects(qsContext, "hdw-hashdata-cn", "tpch");
-	
+
 	printf("name=%s, prefix=%s, limit=%d, nObjects=%d\n", result->name, result->prefix,
                 result->limit, result->nObjects);
-	
+
 	for (i = 0; i < result->nObjects; i++)
         {
                 printf("key=%s, size=%u\n", result->objects[i].key,
@@ -39,7 +39,7 @@ void testListBuckets_without_location()
 	printf("testListBuckets_without_location.......\n");
 	int i;
 	qingstorContext qsContext = qingstorInitContext(location, access_key_id, secret_access_key, buffer_size);
-	
+
 	int count = 0;
     qingstorBucketInfo *buckets = qingstorListBuckets(qsContext, NULL, &count);
     if (count > 0)
@@ -54,7 +54,7 @@ void testListBuckets_without_location()
             }
     }
     qingstorDestroyContext(qsContext);
-	return;	
+	return;
 }
 
 void testListBuckets_with_location()
@@ -111,7 +111,7 @@ void testHeadObject_negative()
         if (result > 0)
         {
                 printf("content_type=%s, content_length=%ld, last_modified=%s, etag=%s\n",
-                        result->content_type, 
+                        result->content_type,
                         result->content_length,
                         result->last_modified,
                         result->etag);
@@ -185,7 +185,7 @@ void testPutObject_negative()
 	printf("testPutObject.....................\n");
 	qingstorContext qsContext = qingstorInitContext(location, access_key_id, secret_access_key, buffer_size);
 
-	qingstorObject object = qingstorPutObject(qsContext, "hellobucket", "zeros");
+	qingstorObject object = qingstorPutObject(qsContext, "alluxio", "test");
 	if (object)
 	{
 		char buffer[1024 * 1024 * 1] = {0};
@@ -263,8 +263,14 @@ void testDeleteBucket_positive()
 	return;
 }
 
+void my_hello(int signo)
+{
+	printf("hello world!\n");
+}
+
 int main(int argc, char *argv[])
 {
+	signal(SIGINT, my_hello);
 	//testListObjects();
 	//testListBuckets_without_location();
 	//testListBuckets_with_location();

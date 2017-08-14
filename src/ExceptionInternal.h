@@ -255,12 +255,6 @@ namespace Internal {
  */
 bool CheckOperationCanceled();
 
-extern volatile bool isCanceled;
-
-void handle_signals(int signo);
-
-bool OperationInterrupt();
-
 #define CHECKOPERATIONCANCELED_BEGIN()	\
 	do {	\
 		if (OperationInterrupt()) {

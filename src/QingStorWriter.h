@@ -53,6 +53,7 @@ private:
 	int64_t mBuffSize;
 	int64_t mWritePos;
 	int32_t mPartNum;
+	bool mCanceled;
 
 	void flush();
 
