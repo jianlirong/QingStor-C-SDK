@@ -222,30 +222,30 @@ void QingStorWriter::flush()
 
 void QingStorWriter::close()
 {
+	if (!mCanceled)
+	{
+		flush();
+
+		std::stringstream sstr;
+		sstr<<mBucket<<"."<<mConfiguration->mLocation<<"."<<mConfiguration->mHost;
+		std::string host = sstr.str();
+		sstr.str("");
+		sstr.clear();
+
+		sstr<<mConfiguration->mProtocol<<"://"<<host<<"/"<<mKey;
+		sstr<<"?upload_id="<<mUploadId;
+		std::string url = sstr.str();
+		sstr.str("");
+		sstr.clear();
+
+		completeMultipartUpload(host.c_str(), url.c_str(), mBucket, &mCred);
+	}
+
 	if (mBuffer)
 	{
 		delete [] mBuffer;
 		mBuffer = NULL;
 	}
-
-	if(mCanceled)
-		return;
-
-	flush();
-
-	std::stringstream sstr;
-	sstr<<mBucket<<"."<<mConfiguration->mLocation<<"."<<mConfiguration->mHost;
-	std::string host = sstr.str();
-	sstr.str("");
-	sstr.clear();
-
-	sstr<<mConfiguration->mProtocol<<"://"<<host<<"/"<<mKey;
-	sstr<<"?upload_id="<<mUploadId;
-	std::string url = sstr.str();
-	sstr.str("");
-	sstr.clear();
-
-	completeMultipartUpload(host.c_str(), url.c_str(), mBucket, &mCred);
 
 	return;
 }
