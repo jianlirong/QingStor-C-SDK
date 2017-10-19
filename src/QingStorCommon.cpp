@@ -408,6 +408,7 @@ DoGetJSON_Internal(const char *host, const char *url, const char *bucket,
 					{
 						THROW(QingStorNetworkException, "HTTP response header is empty");
 					}
+					yamlInfo.data[yamlInfo.position] = '\0';
 					result = ParseHttpHeader(yamlInfo.data);
 					if (!result) {
 						THROW(QingStorNetworkException, "HTTP Header response could not parse into JSON: %s with qsrt as %d", yamlInfo.data, qsrt);
