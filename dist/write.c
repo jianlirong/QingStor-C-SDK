@@ -20,8 +20,8 @@ const char *secret_access_key = "RV9HRXHLpcBQe5cSqwZN7i2OBYpmvEO1wXpRugx7";
 const char *location = "pek3a";
 const int qingstor_buffer_size = 48 << 20;
 const int write_buffer_size = 8 << 20;
-int64_t file_length = 1 << 30;
-int64_t file_nums = 4;
+int64_t file_length = 256 << 20;
+int64_t file_nums = 16;
 
 void testPutObject_positive(char *filename)
 {
@@ -43,6 +43,7 @@ void testPutObject_positive(char *filename)
 			}
 		}
 		qingstorCloseObject(qsContext, object);
+		free(buffer);
 	}
 	else
 	{

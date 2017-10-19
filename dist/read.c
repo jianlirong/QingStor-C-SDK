@@ -20,15 +20,15 @@ const char *secret_access_key = "RV9HRXHLpcBQe5cSqwZN7i2OBYpmvEO1wXpRugx7";
 const char *location = "pek3a";
 const int qingstor_buffer_size = 4 << 20;
 const int read_buffer_size = 8 << 20;
-int64_t file_length = 1 << 30;
-int64_t file_nums = 4;
+int64_t file_length = 256 << 20;
+int64_t file_nums = 16;
 
 void testGetObject_positive(char *filename)
 {
 	printf("testGetObject %s.............\n", filename);
-	qingstorContext qsContext = qingstorInitContext(location, access_key_id, secret_access_key);
+	qingstorContext qsContext = qingstorInitContext(location, access_key_id, secret_access_key, qingstor_buffer_size);
 
-	qingstorObject object = qingstorGetObject(qsContext, "alluxio", filename);
+	qingstorObject object = qingstorGetObject(qsContext, "alluxio", filename, -1, -1);
 	if (object)
 	{
 		char *buffer = (char *)malloc(read_buffer_size * sizeof(char));
@@ -48,6 +48,7 @@ void testGetObject_positive(char *filename)
 			while(read_bytes > 0 && bytesReadLeft > 0);
 		}
 		qingstorCloseObject(qsContext, object);
+		free(buffer);
 	}
 	else
 	{
