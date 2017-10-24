@@ -30,8 +30,8 @@
 namespace QingStor {
 namespace Internal {
 
-QingStorWriter::QingStorWriter(shared_ptr<Configuration> configuration, std::string bucket, ObjectInfo object)
-							: QingStorRWBase(configuration, bucket, object)
+QingStorWriter::QingStorWriter(shared_ptr<Configuration> configuration, std::string bucket,
+		ObjectInfo object, bool cache) : QingStorRWBase(configuration, bucket, object)
 {
 	std::stringstream sstr;
 	sstr<<bucket<<"."<<configuration->mLocation<<"."<<configuration->mHost;
@@ -50,26 +50,35 @@ QingStorWriter::QingStorWriter(shared_ptr<Configuration> configuration, std::str
 	mBuffSize = configuration->mChunkSize;
 	mWritePos = 0;
 	mCanceled = false;
-	mBuffer = new char[mBuffSize];
+	mCache = cache;
+	if(mCache)
+		mBuffer = new char[mBuffSize];
 }
 
 void QingStorWriter::transferData(const char *buffer, int32_t buffsize)
 {
-	int32_t buffPos = 0;
-	while (buffPos != buffsize)
+	if(!mCache)
 	{
-		while (mWritePos != mBuffSize)
+		doSend(buffer, buffsize);
+	}
+	else
+	{
+		int32_t buffPos = 0;
+		while (buffPos != buffsize)
 		{
-			mBuffer[mWritePos++] = buffer[buffPos++];
-			if (buffPos == buffsize)
+			while (mWritePos != mBuffSize)
 			{
-				break;
+				mBuffer[mWritePos++] = buffer[buffPos++];
+				if (buffPos == buffsize)
+				{
+					break;
+				}
 			}
-		}
-		if (mWritePos == mBuffSize)
-		{
-			doSend(mBuffer, mBuffSize);
-			mWritePos = 0;
+			if (mWritePos == mBuffSize)
+			{
+				doSend(mBuffer, mBuffSize);
+				mWritePos = 0;
+			}
 		}
 	}
 
@@ -214,9 +223,16 @@ void QingStorWriter::doSend(const char *data, int32_t length)
 
 void QingStorWriter::flush()
 {
-	doSend(mBuffer, mWritePos);
-	mWritePos = 0;
-
+	if(mCache)
+	{
+		doSend(mBuffer, mWritePos);
+		mWritePos = 0;
+	}
+	else
+	{
+		// for open->close
+		doSend(NULL, 0);
+	}
 	return;
 }
 

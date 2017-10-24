@@ -171,11 +171,13 @@ qingstorObject qingstorGetObject(qingstorContext context, const char *bucket,
  *
  * @param bucket					The name of the targeted bucket.
  * @param key					The key of the targeted object.
+ * @param cache                 if cache is true, will be cached first;
+ * 								otherwise, will be written immediately
  * @return						An object handler if a new object created successfully;
  * 								otherwise NULL.
  */
 qingstorObject qingstorPutObject(qingstorContext context, const char *bucket,
-									const char *key);
+									const char *key, bool cache = true);
 
 /**
  * @param bucket					The name of the targeted bucket.

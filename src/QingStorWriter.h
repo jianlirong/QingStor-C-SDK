@@ -31,7 +31,7 @@ namespace Internal {
 
 class QingStorWriter : public QingStorRWBase {
 public:
-	QingStorWriter(shared_ptr<Configuration> configuration, std::string bucket, ObjectInfo object);
+	QingStorWriter(shared_ptr<Configuration> configuration, std::string bucket, ObjectInfo object, bool canche);
 
 	~QingStorWriter() {
 		if (mBuffer)
@@ -54,6 +54,7 @@ private:
 	int64_t mWritePos;
 	int32_t mPartNum;
 	bool mCanceled;
+	bool mCache;
 
 	void flush();
 

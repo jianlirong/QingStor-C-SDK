@@ -429,7 +429,7 @@ qingstorObject qingstorGetObject(qingstorContext context, const char *bucket,
 }
 
 qingstorObject qingstorPutObject(qingstorContext context, const char *bucket,
-								const char *key)
+								const char *key, bool cache)
 {
 	PARAMETER_ASSERT(context, NULL, EINVAL);
 	PARAMETER_ASSERT(bucket != NULL && strlen(bucket) > 0, NULL, EINVAL);
@@ -442,7 +442,7 @@ qingstorObject qingstorPutObject(qingstorContext context, const char *bucket,
 		std::string str_key(key);
 
 		ObjectInfo object = {str_key, 0};
-		QingStorWriter *writer = new QingStorWriter(context->getContext().configuration(), str_bucket, object);
+		QingStorWriter *writer = new QingStorWriter(context->getContext().configuration(), str_bucket, object, cache);
 		result->setReader(false);
 		result->setRW((void *) writer);
 		return result;
