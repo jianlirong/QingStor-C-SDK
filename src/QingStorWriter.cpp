@@ -53,6 +53,8 @@ QingStorWriter::QingStorWriter(shared_ptr<Configuration> configuration, std::str
 	mCache = cache;
 	if(mCache)
 		mBuffer = new char[mBuffSize];
+	else
+		mBuffer = NULL;
 }
 
 void QingStorWriter::transferData(const char *buffer, int32_t buffsize)
@@ -230,8 +232,9 @@ void QingStorWriter::flush()
 	}
 	else
 	{
-		// for open->close
-		doSend(NULL, 0);
+		// for open -> close
+		if(mPartNum == 0)
+			doSend(mBuffer, mWritePos);
 	}
 	return;
 }
@@ -268,21 +271,19 @@ void QingStorWriter::close()
 
 void QingStorWriter::cancel()
 {
-	if(mPartNum > 0) {
-		std::stringstream sstr;
-		sstr<<mBucket<<"."<<mConfiguration->mLocation<<"."<<mConfiguration->mHost;
-		std::string host = sstr.str();
-		sstr.str("");
-		sstr.clear();
+	std::stringstream sstr;
+	sstr<<mBucket<<"."<<mConfiguration->mLocation<<"."<<mConfiguration->mHost;
+	std::string host = sstr.str();
+	sstr.str("");
+	sstr.clear();
 
-		sstr<<mConfiguration->mProtocol<<"://"<<host<<"/"<<mKey;
-		sstr<<"?upload_id="<<mUploadId;
-		std::string url = sstr.str();
-		sstr.str("");
-		sstr.clear();
-		abortMultipartUpload(host.c_str(), url.c_str(), mBucket, &mCred);
-		mPartNum = 0;
-	}
+	sstr<<mConfiguration->mProtocol<<"://"<<host<<"/"<<mKey;
+	sstr<<"?upload_id="<<mUploadId;
+	std::string url = sstr.str();
+	sstr.str("");
+	sstr.clear();
+	abortMultipartUpload(host.c_str(), url.c_str(), mBucket, &mCred);
+	mPartNum = 0;
 	mCanceled = true;
 	return;
 }
