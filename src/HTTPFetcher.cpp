@@ -139,8 +139,8 @@ void HTTPFetcher::start(CURLM *curl_mhandle)
 
 	if ((mOffset + mBytesDone > 0) || (mLen >= 0))
 	{
-		int64_t offset = mOffset + mBytesDone;
-		int64_t len = mLen;
+		int64_t offset = mOffset + (mNused - mReadOff) + mBytesDone;
+		int64_t len = mLen - (mNused - mReadOff) - mBytesDone;
 		char rangebuf[128];
 
 		if (len >= 0)
