@@ -67,7 +67,7 @@ Signature(HeaderContent *h, const char *path_with_query,
 	strftime(timebuf, 64, "%a, %d %b %Y %H:%M:%S GMT", tm_info);
 	HeaderContent_Add(h, DATE, timebuf);
 
-	if (QSRT_LIST_OBJECT == qsrt || QSRT_GET_DATA == qsrt)
+	if (QSRT_LIST_OBJECT == qsrt || QSRT_GET_DATA == qsrt || QSRT_LIST_BUCKET == qsrt)
 	{
 		sstr<<"GET\n\n\n"<<timebuf<<"\n"<<path_with_query;
 	}
